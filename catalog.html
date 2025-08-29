@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menú - Cafetería Escolar</title>
+    <!-- PWA Configuration -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#3b82f6">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #e6f7ff 0%, #d0edff 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            border: 1px solid #e0e7ff;
+        }
+        .header {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            transform: rotate(45deg);
+            animation: shine 3s infinite;
+        }
+        @keyframes shine {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+        .filters {
+            padding: 20px;
+            background: #f8f9fa;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+        }
+        .filter-btn {
+            background: white;
+            border: 2px solid #3b82f6;
+            color: #3b82f6;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        .filter-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.2);
+        }
+        .filter-btn.active {
+            background: #3b82f6;
+            color: white;
+        }
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 30px;
+        }
+        .product-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            border: 1px solid #e0e7ff;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.6s forwards;
+        }
+        .product-card:nth-child(1) { animation-delay: 0.1s; }
+        .product-card:nth-child(2) { animation-delay: 0.2s; }
+        .product-card:nth-child(3) { animation-delay: 0.3s; }
+        .product-card:nth-child(4) { animation-delay: 0.4s; }
+        .product-card:nth-child(5) { animation-delay: 0.5s; }
+        .product-card:nth-child(6) { animation-delay: 0.6s; }
+        
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+        .product-name {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .product-category {
+            color: #7f8c8d;
+            font-size: 0.9em;
+            margin-bottom: 15px;
+        }
+        .product-price {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #3b82f6;
+            margin-bottom: 10px;
+        }
+        .product-stock {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+        .stock-available {
+            background: #d4edda;
+            color: #155724;
+        }
+        .stock-low {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .stock-out {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .last-updated {
+            text-align: center;
+            padding: 20px;
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 50px;
+            grid-column: 1 / -1;
+        }
+        .empty-state h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .loading {
+            text-align: center;
+            padding: 50px;
+            grid-column: 1 / -1;
+        }
+        @media (max-width: 768px) {
+            .products-grid {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🍽️ Cafetería Escolar</h1>
+            <p>Menú Disponible Hoy</p>
+        </div>
+        
+        <div class="filters">
+            <button class="filter-btn active" onclick="filterProducts('all')">Todos</button>
+            <button class="filter-btn" onclick="filterProducts('1')">🌅 Media Mañana</button>
+            <button class="filter-btn" onclick="filterProducts('2')">🍪 Merienda</button>
+        </div>
+        
+        <div class="products-grid" id="productsContainer">
+            <div class="loading">
+                <p>🔄 Cargando productos...</p>
+            </div>
+        </div>
+        
+        <div class="last-updated" id="lastUpdated">
+            Última actualización: Cargando...
+        </div>
+    </div>
+
+    <script>
+        // Función para obtener el texto del estado según la cantidad
+        function getStockText(quantity) {
+            if (quantity === 0) return '❌ Agotado';
+            if (quantity <= 5) return `⚠️ Solo ${quantity} disponibles`;
+            return `✅ ${quantity} disponibles`;
+        }
+
+        // Función para obtener la clase CSS del estado
+        function getStockClass(quantity) {
+            if (quantity === 0) return 'stock-out';
+            if (quantity <= 5) return 'stock-low';
+            return 'stock-available';
+        }
+
+        // Datos de ejemplo (simulando la base de datos)
+        let allProducts = [
+            {
+                product_id: 1,
+                nombre: 'Empanada de Carne',
+                precio: 2500,
+                cantidad: 15,
+                category_id: 1,
+                categoria_nombre: 'Media Mañana'
+            },
+            {
+                product_id: 2,
+                nombre: 'Jugo de Naranja',
+                precio: 1500,
+                cantidad: 0,
+                category_id: 2,
+                categoria_nombre: 'Merienda'
+            },
+            {
+                product_id: 3,
+                nombre: 'Pan con Chocolate',
+                precio: 2000,
+                cantidad: 3,
+                category_id: 1,
+                categoria_nombre: 'Media Mañana'
+            }
+        ];
+
+        let currentFilter = 'all';
+
+        // Cargar productos al iniciar
+        window.addEventListener('load', () => {
+            filterProducts(currentFilter);
+            updateLastUpdated();
+        });
+
+        function filterProducts(category) {
+            currentFilter = category;
+            
+            // Actualizar botones activos
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event?.target?.classList?.add('active');
+            
+            const container = document.getElementById('productsContainer');
+            
+            if (!allProducts || allProducts.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h3>📭 No hay productos disponibles</h3>
+                        <p>Vuelve más tarde para ver nuestro menú</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let filteredProducts = [];
+            if (category === 'all') {
+                filteredProducts = allProducts;
+            } else {
+                filteredProducts = allProducts.filter(product => 
+                    product.category_id === parseInt(category)
+                );
+            }
+            
+            if (filteredProducts.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h3>📭 No hay productos en esta jornada</h3>
+                        <p>Prueba con otra jornada</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            filteredProducts.forEach(product => {
+                html += `
+                    <div class="product-card">
+                        <div class="product-name">${product.nombre}</div>
+                        <div class="product-category">${product.categoria_nombre}</div>
+                        <div class="product-price">$${parseFloat(product.precio).toLocaleString('es-CO')}</div>
+                        <div class="product-stock ${getStockClass(product.cantidad)}">
+                            ${getStockText(product.cantidad)}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        function updateLastUpdated() {
+            const now = new Date();
+            const options = { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            };
+            document.getElementById('lastUpdated').textContent = 
+                `Última actualización: ${now.toLocaleDateString('es-ES', options)}`;
+        }
+    </script>
+</body>
+</html>
