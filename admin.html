@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Admin - Cafetería Escolar</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #e6f7ff 0%, #d0edff 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            border: 1px solid #e0e7ff;
+        }
+        .header {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            transform: rotate(45deg);
+            animation: shine 3s infinite;
+        }
+        @keyframes shine {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            padding: 30px;
+        }
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                padding: 20px;
+            }
+        }
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e0e7ff;
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        .card h3 {
+            color: #1e40af;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e7ff;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: #f8fcff;
+        }
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        .btn {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+        }
+        .inventory-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .inventory-table th,
+        .inventory-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        .inventory-table th {
+            background: #f8f9fa;
+            color: #333;
+            font-weight: 600;
+        }
+        .inventory-table tr:hover {
+            background: rgba(59, 130, 246, 0.05);
+        }
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .status-available {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status-low {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .status-out {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🍽️ Panel de Administración</h1>
+            <p>Cafetería Escolar - Gestión de Menú</p>
+        </div>
+        <div class="main-content">
+            <!-- Registro de Productos -->
+            <div class="card">
+                <h3>➕ Registrar Nuevo Producto</h3>
+                <div class="form-group">
+                    <label>Nombre del Producto</label>
+                    <input type="text" id="productName" placeholder="Ej: Empanada de Carne">
+                </div>
+                <div class="form-group">
+                    <label>Precio (COP)</label>
+                    <input type="number" id="price" placeholder="0" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label>Cantidad Disponible</label>
+                    <input type="number" id="quantity" placeholder="0" min="0">
+                </div>
+                <div class="form-group">
+                    <label>Jornada</label>
+                    <select id="category">
+                        <option value="">Seleccionar jornada</option>
+                        <option value="1">Media Mañana</option>
+                        <option value="2">Merienda</option>
+                    </select>
+                </div>
+                <button class="btn" onclick="addProduct()">
+                    ✅ Agregar Producto
+                </button>
+            </div>
+            
+            <!-- Inventario Actual -->
+            <div class="card">
+                <h3>📦 Menú Actual</h3>
+                <div style="max-height: 400px; overflow-y: auto;">
+                    <table class="inventory-table">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th>Precio</th>
+                                <th>Stock</th>
+                                <th>Jornada</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventoryTableBody">
+                            <tr>
+                                <td colspan="6" style="text-align: center; color: #7f8c8d; padding: 40px;">
+                                    Cargando productos...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Función para obtener el texto del estado según la cantidad
+        function getStatusText(quantity) {
+            if (quantity === 0) return 'Agotado';
+            if (quantity <= 5) return 'Poco Stock';
+            return 'Disponible';
+        }
+
+        // Función para obtener la clase CSS del estado
+        function getStatusClass(quantity) {
+            if (quantity === 0) return 'status-out';
+            if (quantity <= 5) return 'status-low';
+            return 'status-available';
+        }
+
+        // Datos de ejemplo (simulando la base de datos)
+        let products = [
+            {
+                product_id: 1,
+                nombre: 'Empanada de Carne',
+                precio: 2500,
+                cantidad: 15,
+                category_id: 1,
+                categoria_nombre: 'Media Mañana',
+                timestamp: '2024-01-01 10:00:00'
+            },
+            {
+                product_id: 2,
+                nombre: 'Jugo de Naranja',
+                precio: 1500,
+                cantidad: 0,
+                category_id: 2,
+                categoria_nombre: 'Merienda',
+                timestamp: '2024-01-01 10:00:00'
+            }
+        ];
+
+        // Cargar productos al iniciar
+        window.addEventListener('load', () => {
+            updateInventoryDisplay(products);
+        });
+
+        function addProduct() {
+            const name = document.getElementById('productName').value.trim();
+            const price = parseFloat(document.getElementById('price').value);
+            const quantity = parseInt(document.getElementById('quantity').value);
+            const category = document.getElementById('category').value;
+            const categoryName = category === '1' ? 'Media Mañana' : 'Merienda';
+
+            if (!name || !price || !quantity || !category) {
+                alert('Por favor completa todos los campos');
+                return;
+            }
+
+            if (price <= 0 || quantity < 0) {
+                alert('El precio debe ser mayor a 0 y la cantidad no puede ser negativa');
+                return;
+            }
+
+            // Agregar producto al array (simulando base de datos)
+            const newProduct = {
+                product_id: products.length + 1,
+                nombre: name,
+                precio: price,
+                cantidad: quantity,
+                category_id: parseInt(category),
+                categoria_nombre: categoryName,
+                timestamp: new Date().toISOString()
+            };
+
+            products.push(newProduct);
+
+            // Limpiar formulario
+            document.getElementById('productName').value = '';
+            document.getElementById('price').value = '';
+            document.getElementById('quantity').value = '';
+            document.getElementById('category').value = '';
+
+            alert('Producto agregado correctamente');
+            updateInventoryDisplay(products);
+        }
+
+        function updateInventoryDisplay(products) {
+            const tbody = document.getElementById('inventoryTableBody');
+            
+            if (!products || products.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align: center; color: #7f8c8d; padding: 40px;">
+                            No hay productos registrados
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            let html = '';
+            products.forEach(product => {
+                html += `
+                    <tr>
+                        <td>
+                            <strong>${product.nombre}</strong>
+                        </td>
+                        <td>$${parseFloat(product.precio).toLocaleString('es-CO')}</td>
+                        <td>
+                            <input type="number" value="${product.cantidad}" 
+                                   onchange="updateProduct(${product.product_id}, this.value)" 
+                                   style="width: 60px; padding: 5px; border: 1px solid #ddd; border-radius: 5px;">
+                        </td>
+                        <td>${product.categoria_nombre}</td>
+                        <td>
+                            <span class="status-badge ${getStatusClass(product.cantidad)}">
+                                ${getStatusText(product.cantidad)}
+                            </span>
+                        </td>
+                        <td>
+                            <button onclick="deleteProduct(${product.product_id})" 
+                                    style="background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">
+                                🗑️
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        function updateProduct(productId, quantity) {
+            if (quantity < 0) {
+                alert('La cantidad no puede ser negativa');
+                updateInventoryDisplay(products); // Recargar para restaurar valor
+                return;
+            }
+
+            // Actualizar producto en el array
+            const productIndex = products.findIndex(p => p.product_id === productId);
+            if (productIndex !== -1) {
+                products[productIndex].cantidad = parseInt(quantity);
+                alert('Producto actualizado');
+                updateInventoryDisplay(products);
+            }
+        }
+
+        function deleteProduct(productId) {
+            if (confirm('¿Estás seguro de eliminar este producto?')) {
+                // Eliminar producto del array
+                products = products.filter(p => p.product_id !== productId);
+                alert('Producto eliminado');
+                updateInventoryDisplay(products);
+            }
+        }
+    </script>
+</body>
+</html>
